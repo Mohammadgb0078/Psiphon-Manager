@@ -214,16 +214,6 @@ ln -sf "${INSTALL_DIR}/src/cli.js" "$CLI_SYMLINK"
 echo -e "  ${GREEN}✔ Linked ${CLI_SYMLINK} -> ${INSTALL_DIR}/src/cli.js${NC}"
 
 # 12. Completion Banner
-echo -e "\n${BOLD}${GREEN}==================================================================${NC}"
-echo -e "${BOLD}${GREEN}   🎉 Psiphon Multi-Instance Manager successfully installed!      ${NC}"
-echo -e "${BOLD}${GREEN}==================================================================${NC}\n"
-
-echo -e "برای باز کردن منوی تعاملی و مدیریت پورت‌ها، ریجن‌ها و لاگ‌ها دستور زیر را وارد کنید:"
-echo -e "  ${BOLD}${CYAN}psi-ui${NC}\n"
-
-echo -e "دستورات کاربردی سیستم‌عامل:"
-echo -e "  ${BOLD}psi-ui doctor${NC}                         # عیب‌یابی و بررسی وضعیت سلامت سیستم"
-echo -e "  ${BOLD}sudo systemctl status ${SERVICE_NAME}${NC}   # وضعیت سرویس در لینوکس"
-echo -e "  ${BOLD}sudo journalctl -u ${SERVICE_NAME} -f${NC}   # مشاهده زنده لاگ‌های سرویس"
-echo -e "  ${BOLD}sudo systemctl restart ${SERVICE_NAME}${NC}  # ریستارت کل سرویس"
-echo ""
+echo -e "\n${BOLD}${GREEN}✔ Psiphon Multi Manager successfully installed!${NC}"
+echo -e "Launch interactive menu: ${BOLD}${CYAN}psi-ui${NC}"
+echo -e "Run diagnostics:         ${BOLD}psi-ui doctor${NC}\n"
