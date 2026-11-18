@@ -6,12 +6,12 @@ A simple and reliable tool to run and manage multiple Psiphon tunnels on differe
 
 ---
 
-## ⚡ 1-Line Quick Installation (Linux)
+## ⚡ 1- Quick Installation (Linux)
 
 Run the following command as root to automatically install Node.js (native binary), download the official Psiphon binary into `bin/`, register the systemd service, and configure the `psi-ui` global command:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/Mohammadgb0078/Psiphon-Manager/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Mohammadgb0078/Psiphon-Manager/master/install.sh)
 ```
 
 *(If you already cloned the repository locally, simply run: `sudo bash install.sh`)*
