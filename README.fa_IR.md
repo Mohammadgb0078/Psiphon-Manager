@@ -6,12 +6,12 @@
 
 ---
 
-## ⚡ نصب سریع تک‌خطی (Quick Installation)
+## ⚡ نصب سریع (Quick Installation)
 
 کافیست دستور زیر را با دسترسی روت در ترمینال سرور لینوکس خود اجرا کنید تا نود جی‌اس به صورت Native نصب شده، باینری رسمی سایفون دانلود شده، سرویس رجیستر شود و دستور `psi-ui` در دسترس قرار گیرد:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/Mohammadgb0078/Psiphon-Manager/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Mohammadgb0078/Psiphon-Manager/master/install.sh)
 ```
 
 *(در صورتی که سورس پروژه را از قبل روی سرور کلون کرده‌اید، فقط دستور `sudo bash install.sh` را اجرا کنید)*
