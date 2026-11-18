@@ -1,0 +1,13 @@
+{
+  "binaryPath": "./bin/psiphon-tunnel-core-x86_64",
+  "baseConfigFile": null,
+  "baseConfig": {
+    "PropagationChannelId": "FFFFFFFFFFFFFFFF",
+    "SponsorId": "FFFFFFFFFFFFFFFF",
+    "RemoteServerListUrl": "https://s3.amazonaws.com//psiphon/web/mjr4-p23r-puwl/server_list_compressed",
+    "RemoteServerListDownloadFilename": "remote_server_list",
+    "RemoteServerListSignaturePublicKey": "MIICIDANBgkqhkiG9w0BAQEFAAOCAg0AMIICCAKCAgEAt7Ls+/39r+T6zNW7GiVpJfzq/xvL9SBH5rIFnk0RXYEYavax3WS6HOD35eTAqn8An",
+    "UseIndistinguishableTLS": true
+  },
+  "instances": []
+}

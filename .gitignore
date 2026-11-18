@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Binaries (downloaded automatically by install.sh)
+bin/
+*.exe
+
+# Runtime & Process State
+cli.lock
+*.sock
+*.pid
+
+# Data and Cache
+data/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / Editor Files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.tmp
