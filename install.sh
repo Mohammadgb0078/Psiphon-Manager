@@ -34,6 +34,7 @@ CLI_SYMLINK="/usr/local/bin/psi-ui"
 NODE_TARGET_VERSION="24.21.0"
 PSIPHON_BIN_URL="https://github.com/Psiphon-Labs/psiphon-tunnel-core-binaries/raw/refs/heads/master/linux/psiphon-tunnel-core-x86_64"
 DEFAULT_REPO_URL="https://github.com/Mohammadgb0078/Psiphon-Manager"
+CONFIG_RAW_URL="https://raw.githubusercontent.com/Mohammadgb0078/Psiphon-Manager/master/config.json"
 
 # 3. Detect Architecture
 ARCH="$(uname -m)"
@@ -154,22 +155,8 @@ echo -e "\n${BLUE}▶ Initializing configuration...${NC}"
 CONFIG_FILE="${INSTALL_DIR}/config.json"
 
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo -e "  Generating default config.json..."
-  cat > "$CONFIG_FILE" <<EOF
-{
-  "binaryPath": "./bin/psiphon-tunnel-core-x86_64",
-  "baseConfigFile": "/etc/psiphon-manager/core.config",
-  "baseConfig": {
-    "PropagationChannelId": "FFFFFFFFFFFFFFFF",
-    "SponsorId": "FFFFFFFFFFFFFFFF",
-    "RemoteServerListUrl": "https://s3.amazonaws.com//psiphon/web/mjr4-p23r-puwl/server_list_compressed",
-    "RemoteServerListDownloadFilename": "remote_server_list",
-    "RemoteServerListSignaturePublicKey": "MIICIDANBgkqhkiG9w0BAQEFAAOCAg0AMIICCAKCAgEAt7Ls+/39r+T6zNW7GiVpJfzq/xvL9SBH5rIFnk0RXYEYavax3WS6HOD35eTAqn8An",
-    "UseIndistinguishableTLS": true
-  },
-  "instances": []
-}
-EOF
+  echo -e "  Downloading config.json from repository..."
+  curl -fsSL "$CONFIG_RAW_URL" -o "$CONFIG_FILE"
 fi
 
 # Test dry-run: Verify config syntax and loader

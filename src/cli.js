@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const { execSync } = require('child_process');
 const { Command } = require('commander');
 const { IpcClient } = require('./ipc');
 const { LOCK_FILE_NAME, ALLOWED_REGIONS, getLockCandidates } = require('./constants');
@@ -136,6 +137,102 @@ function printStatusTable(data) {
 }
 
 /**
+ * Update project from git and restart service
+ */
+async function runUpdate() {
+  console.log('\n' + c.bold(c.cyan('═══════════════ Update Psiphon Multi Manager ═══════════════')));
+  const targetDir = fs.existsSync('/etc/psiphon-manager/.git') ? '/etc/psiphon-manager' : process.cwd();
+  console.log(c.blue(`▶ Target directory: ${targetDir}`));
+
+  try {
+    console.log(c.blue('▶ Pulling latest code from git repository...'));
+    execSync('git pull origin main --quiet', { cwd: targetDir, stdio: 'inherit', timeout: 30000 });
+
+    console.log(c.blue('▶ Updating dependencies (npm install)...'));
+    execSync('npm install --omit=dev --silent', { cwd: targetDir, stdio: 'inherit', timeout: 60000 });
+
+    console.log(c.blue('▶ Setting executable permissions on CLI...'));
+    const cliPath = path.join(targetDir, 'src/cli.js');
+    if (fs.existsSync(cliPath)) {
+      try { fs.chmodSync(cliPath, 0o755); } catch {}
+    }
+
+    if (process.platform === 'linux' && fs.existsSync('/run/systemd/system')) {
+      console.log(c.blue('▶ Restarting psiphon-manager.service...'));
+      try {
+        execSync('systemctl restart psiphon-manager.service', { stdio: 'inherit', timeout: 15000 });
+      } catch (svcErr) {
+        console.log(c.yellow(`  ⚠ Note on service restart: ${svcErr.message}`));
+      }
+    }
+
+    console.log(c.bold(c.green('\n✔ Psiphon Multi Manager updated successfully!')));
+  } catch (err) {
+    console.error(c.bold(c.red(`\n✖ Update failed: ${err.message}`)));
+  }
+}
+
+/**
+ * Uninstall Psiphon Multi Manager, stopping services and removing files
+ */
+async function runUninstall(askTrimmed, rl) {
+  console.log('\n' + c.bold(c.red('═══════════════ Uninstall Psiphon Multi Manager ═══════════════')));
+  console.log(c.yellow('This will stop all running tunnels, remove the systemd service, and unregister psi-ui.'));
+
+  const confirm = await askTrimmed(c.bold('Are you sure you want to proceed? (y/N): '));
+  if (!confirm || (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes')) {
+    console.log(c.cyan('Uninstallation cancelled.'));
+    return false;
+  }
+
+  try {
+    if (process.platform === 'linux') {
+      console.log(c.blue('▶ Stopping and disabling systemd service...'));
+      try { execSync('systemctl stop psiphon-manager.service', { stdio: 'ignore', timeout: 10000 }); } catch {}
+      try { execSync('systemctl disable psiphon-manager.service', { stdio: 'ignore', timeout: 10000 }); } catch {}
+
+      if (fs.existsSync('/etc/systemd/system/psiphon-manager.service')) {
+        console.log(c.blue('▶ Removing systemd service file...'));
+        try { fs.unlinkSync('/etc/systemd/system/psiphon-manager.service'); } catch {}
+        try { execSync('systemctl daemon-reload', { stdio: 'ignore', timeout: 10000 }); } catch {}
+      }
+    }
+
+    console.log(c.blue('▶ Removing global CLI shortcut (/usr/local/bin/psi-ui)...'));
+    try {
+      if (fs.existsSync('/usr/local/bin/psi-ui')) {
+        fs.unlinkSync('/usr/local/bin/psi-ui');
+      }
+    } catch {}
+
+    console.log(c.blue('▶ Cleaning temporary sockets and lock files...'));
+    try {
+      if (fs.existsSync('/tmp/psiphon-manager.sock')) fs.unlinkSync('/tmp/psiphon-manager.sock');
+      if (fs.existsSync('/tmp/psiphon-cli.lock')) fs.unlinkSync('/tmp/psiphon-cli.lock');
+    } catch {}
+
+    const deleteData = await askTrimmed(c.yellow('Do you also want to delete all configuration, logs, and data in /etc/psiphon-manager? (y/N): '));
+    if (deleteData && (deleteData.toLowerCase() === 'y' || deleteData.toLowerCase() === 'yes')) {
+      if (fs.existsSync('/etc/psiphon-manager')) {
+        console.log(c.blue('▶ Removing /etc/psiphon-manager directory...'));
+        try {
+          fs.rmSync('/etc/psiphon-manager', { recursive: true, force: true });
+        } catch (rmErr) {
+          console.error(c.yellow(`  Could not remove /etc/psiphon-manager: ${rmErr.message}`));
+        }
+      }
+    }
+
+    console.log(c.bold(c.green('\n✔ Psiphon Multi Manager has been completely uninstalled.')));
+    if (rl) rl.close();
+    process.exit(0);
+  } catch (err) {
+    console.error(c.bold(c.red(`\n✖ Uninstallation encountered an error: ${err.message}`)));
+    return false;
+  }
+}
+
+/**
  * Interactive terminal menu when no CLI arguments are supplied
  */
 async function runInteractiveMenu(initialClient) {
@@ -168,6 +265,7 @@ async function runInteractiveMenu(initialClient) {
 
   const showMenu = async () => {
     while (!rlClosed) {
+      console.clear();
       const currentClient = getActiveClient();
       console.log('\n' + c.bold(c.cyan('═══════════════ Psiphon Multi Manager (psi-ui) ═══════════════')));
       if (!currentClient) {
@@ -181,10 +279,12 @@ async function runInteractiveMenu(initialClient) {
       console.log(` ${c.bold('[6]')} View / Follow Logs`);
       console.log(` ${c.bold('[7]')} Start / Stop Instance`);
       console.log(` ${c.bold('[8]')} Doctor (Diagnostics & Health Check)`);
-      console.log(` ${c.bold('[9]')} Exit`);
+      console.log(` ${c.bold('[9]')} Update (Pull Latest Code & Restart)`);
+      console.log(` ${c.bold('[10]')} Uninstall (Remove Service & Files)`);
+      console.log(` ${c.bold('[11]')} Exit`);
       console.log('─────────────────────────────────────────────────────────────');
 
-      const rawChoice = await askTrimmed(c.bold('Select an option (1-9): '));
+      const rawChoice = await askTrimmed(c.bold('Select an option (1-11): '));
       if (rawChoice === null) {
         break; // EOF reached (Ctrl+D)
       }
@@ -401,7 +501,21 @@ async function runInteractiveMenu(initialClient) {
           break;
         }
 
-        case '9':
+        case '9': {
+          await runUpdate();
+          await ask(c.gray('Press Enter to continue...'));
+          break;
+        }
+
+        case '10': {
+          const removed = await runUninstall(askTrimmed, rl);
+          if (removed) return;
+          await ask(c.gray('Press Enter to continue...'));
+          break;
+        }
+
+        case '11':
+        case '0':
         case 'q':
         case 'exit':
           rl.close();
@@ -409,7 +523,7 @@ async function runInteractiveMenu(initialClient) {
           return;
 
         default:
-          console.log(c.yellow('Invalid choice, please select 1-9.'));
+          console.log(c.yellow('Invalid choice, please select 1-11.'));
           break;
       }
     }
@@ -652,6 +766,24 @@ program
       console.error(c.red(`[ERROR] Failed to stop instance: ${err.message}`));
       process.exit(1);
     }
+  });
+
+// Subcommand: update
+program
+  .command('update')
+  .description('Pull latest changes from repository and restart service')
+  .action(async () => {
+    await runUpdate();
+  });
+
+// Subcommand: uninstall
+program
+  .command('uninstall')
+  .description('Uninstall and remove Psiphon Multi Manager and systemd service')
+  .action(async () => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const askTrimmed = (q) => new Promise((res) => rl.question(q, (a) => res(a ? a.trim() : '')));
+    await runUninstall(askTrimmed, rl);
   });
 
 // If executed directly from command line

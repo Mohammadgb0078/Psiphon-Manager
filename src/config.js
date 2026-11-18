@@ -183,8 +183,8 @@ function loadConfig(filePath) {
         delete parsedBase.EgressRegion;
         delete parsedBase.DataStoreDirectory;
         delete parsedBase.DataRootDirectory;
-        // Merge with preference to user-specified baseConfig overrides
-        parsed.baseConfig = { ...parsedBase, ...(parsed.baseConfig || {}) };
+        // Core config provides official Psiphon parameters and overrides baseConfig defaults
+        parsed.baseConfig = { ...(parsed.baseConfig || {}), ...parsedBase };
         if (!parsed.baseConfigFile) {
           parsed.baseConfigFile = baseConfigFileCandidate;
         }

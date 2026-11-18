@@ -29,7 +29,7 @@ psi-ui
 منوی تعاملی و زیبا باز می‌شود:
 
 ```text
-═══════════════ Psiphon Manager (psi-ui) ═══════════════
+═══════════════ Psiphon Multi Manager (psi-ui) ═══════════════
  [1] View Instances Status
  [2] Add New Instance
  [3] Remove Instance
@@ -38,9 +38,11 @@ psi-ui
  [6] View / Follow Logs
  [7] Start / Stop Instance
  [8] Doctor (Diagnostics & Health Check)
- [9] Exit
-─────────────────────────────────────────────────────────
-Select an option (1-9):
+ [9] Update (Pull Latest Code & Restart)
+ [10] Uninstall (Remove Service & Files)
+ [11] Exit
+─────────────────────────────────────────────────────────────
+Select an option (1-11):
 ```
 
 ---
